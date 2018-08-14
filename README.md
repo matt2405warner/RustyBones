@@ -85,6 +85,7 @@ To retrieve all components with entities that have at least the same signature u
 std::vector<std::tuple<Movement, Position>> components = manager->get_entities_with_components<Movement, Position>();
 ```
 
+**Removing components**
 
 To remove components use: `manager->remove_component<T>(entity)`
 
