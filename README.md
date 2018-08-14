@@ -29,13 +29,16 @@ manager->destroy_entity(entity);
 ```
 
 **Implementation Details:**
+
 * When a entity is destroyed its `id` is added to a free list inside of `rusty::EntityManager`.
 * When a entity is created it first checks if there is an enity in the free list located in the `rusty::EntityManager`. If so, then the version is incremented for this specific entity otherwise the version is one and the id is the next largest id created.
 
 ### Components (Holds only Data)
+
 Components in RustyBones should only contain data and as little logic as possible. This is to provide the best possible cache friendliness. All logic should be contained inside of `rusty::Systems`.
 
-*Creating Components*
+**Creating Components**
+
 An example component might be a movement componented represented as:
 ```cpp
 class Movement : IComponent
@@ -52,27 +55,36 @@ public:
 };
 ```
 
+
 **Adding components to their respective entities**
+
 Associating a component with a previously created entity is as simple as:
 ```cpp
 Movement* movement = manager->add_component<Movement>(entity);
 ```
 
+
 **Quering components**
+
 To retrieve a singular component use `manager->get_component<T>(entity);`
 ```cpp
 Movement* movement = manager->get_component<Movement>(entity);
 ```
 
+
 To retrieve multiple components associated with an enity use `manager->get_components<T, ...Tn>(entity);`
+
 ```cpp
 std::tuple<Movement*, Position*> components = manager->get_components<Movement, Position>(entity);
 ```
 
+
 To retrieve all components with entities that have at least the same signature use:
+
 ```cpp
 std::vector<std::tuple<Movement, Position>> components = manager->get_entities_with_components<Movement, Position>();
 ```
+
 
 To remove components use: `manager->remove_component<T>(entity)`
 
@@ -87,9 +99,9 @@ class MovementSystem : public ComponentSystem<MovementSystem, Movement, Position
 public:
 void update(float dt, Movement* movement, Position* position)
 {
-  position.x += movement->x * movement->speed * dt;
-  position.y += movement->y * movement->speed * dt;
-  position.z += movement->z * movement->speed * dt;
+  position->x += movement->x * movement->speed * dt;
+  position->y += movement->y * movement->speed * dt;
+  position->z += movement->z * movement->speed * dt;
 }
 };
 ```
