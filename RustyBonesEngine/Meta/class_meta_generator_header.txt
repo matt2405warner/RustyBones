@@ -1,0 +1,65 @@
+#pragma once
+
+#include <string>
+//#include "GuidGenerator.hpp"
+{% for include_name in includes %}
+#include "{{include_name}}"
+{% endfor %}
+
+namespace rusty
+{
+	{% for class in classes %}
+	// Construct MetaData info for {{class.name}}
+	template <>
+	MetaClass* construct_type<{{class.name}}>()
+	{
+		static_assert(std::is_base_of_v<Object, {{class.name}}>, "Cannot construct meta info for {{class.name}} if it does not derive from Object");
+
+		auto generated = new MetaClass(
+			{{loop.index - 1}},
+			std::string("{{class.name}}"),
+			sizeof({{class.name}}),
+			[]() -> Object* { return static_cast<Object*>(new {{class.name}}()); },
+			[](unsigned char* address) -> Object* { return static_cast<Object*>(new (address) {{class.name}}()); },
+			[](Object* obj) { auto cls = reinterpret_cast<{{class.name}}*>(obj); cls->~{{class.name}}(); }
+		);
+
+		// Generate class members
+		/*{% for member in class.members %}
+		generated->add_member("{{member.name}}", OffsetOf(&{{class.name}}::{{member.name}}));
+		{% endfor %}
+		// Generate class functions
+		{% for function in class.functions %}
+		generated->add_function("{{function.name}}", OffsetOf(&{{class.name}}::{{function.name}}));
+		{% endfor %}*/
+
+		MetaDB::instance().add_type(generated);
+
+		return generated;
+	}
+
+	// Get meta data info for {{class.name}}.
+	// if nullptr then construct meta info for {{class.name}}.
+	template <>
+	MetaClass* get_type<{{class.name}}>()
+	{
+		static_assert(std::is_base_of_v<Object, {{class.name}}>, "Cannot get meta info for {{class.name}} if it does not derive from Object");
+
+		auto generated = MetaDB::instance().get_meta("{{class.name}}");
+
+		if (generated != nullptr)
+			return generated;
+
+		generated = construct_type<{{class.name}}>();
+
+		return generated;
+	}
+	{% endfor %}
+
+	static void InitMeta()
+	{
+		{% for class in classes %}
+		auto init_{{loop.index}} = construct_type<{{class.name}}>();
+		{% endfor %}
+	}
+}

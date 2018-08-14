@@ -1,0 +1,2 @@
+#include "{{pch}}"
+#include "{{gen_name}}"
